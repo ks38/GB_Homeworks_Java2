@@ -1,6 +1,9 @@
 package ru.knyazevvb.Players;
 
 public interface Player {
-boolean run (double length);
-boolean jump (double height);
+    boolean run(double runLength);
+
+    boolean jump(double jumpHeight);
+
+    boolean swim(double swimLength);
 }

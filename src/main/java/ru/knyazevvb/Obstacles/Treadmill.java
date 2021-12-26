@@ -1,4 +1,5 @@
 package ru.knyazevvb.Obstacles;
+
 import ru.knyazevvb.Players.*;
 
 public class Treadmill implements Barrier{
@@ -7,7 +8,6 @@ public class Treadmill implements Barrier{
     public Treadmill(double length) {
         this.length = length;
     }
-
 
     @Override
     public boolean doBarrier(Player player) {
