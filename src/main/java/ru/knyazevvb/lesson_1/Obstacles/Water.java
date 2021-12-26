@@ -1,6 +1,6 @@
-package ru.knyazevvb.Obstacles;
+package ru.knyazevvb.lesson_1.Obstacles;
 
-import ru.knyazevvb.Players.*;
+import ru.knyazevvb.lesson_1.Players.*;
 
 public class Water implements Barrier{
     private double swimLength;

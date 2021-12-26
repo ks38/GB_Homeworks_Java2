@@ -1,7 +1,7 @@
-package ru.knyazevvb;
+package ru.knyazevvb.lesson_1;
 
-import ru.knyazevvb.Players.*;
-import ru.knyazevvb.Obstacles.*;
+import ru.knyazevvb.lesson_1.Players.*;
+import ru.knyazevvb.lesson_1.Obstacles.*;
 
 public class Main {
     public static void main(String[] args) {
@@ -15,7 +15,7 @@ public class Main {
 
         Barrier[] barriers = {
                 new Treadmill(50),
-                new Wall(10),
+                new Wall(0.2),
                 new Water(5)
         };
 

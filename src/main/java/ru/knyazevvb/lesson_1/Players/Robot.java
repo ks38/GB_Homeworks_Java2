@@ -1,4 +1,4 @@
-package ru.knyazevvb.Players;
+package ru.knyazevvb.lesson_1.Players;
 
 public class Robot implements Player {
     private String name;
