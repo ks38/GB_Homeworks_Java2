@@ -21,7 +21,6 @@ public enum Command {
 
     Command(String command) {
         this.command = command;
-
     }
 
     public static Command getCommandByText(String text) {

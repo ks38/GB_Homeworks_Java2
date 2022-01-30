@@ -58,8 +58,6 @@ public class ClientController {
             messageField.setText(Command.PRIVATE_MESSAGE.getCommand() + " " + client + " " + message);
             messageField.requestFocus();
             messageField.selectEnd();
-
-
         }
     }
 

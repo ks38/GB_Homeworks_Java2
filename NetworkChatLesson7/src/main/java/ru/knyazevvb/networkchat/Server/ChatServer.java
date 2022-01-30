@@ -16,7 +16,6 @@ public class ChatServer {
     public ChatServer() {
         clients = new HashMap<>();
         authService = new InMemoryAuthService();
-
     }
 
     public void start() {

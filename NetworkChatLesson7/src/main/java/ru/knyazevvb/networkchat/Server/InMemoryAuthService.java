@@ -24,7 +24,6 @@ public class InMemoryAuthService implements AuthService {
     }
 
     private static class UserData {
-
         private final String login;
         private final String password;
         private final String nick;
