@@ -1,17 +1,21 @@
 package ru.knyazevvb.networkchat.Server;
 
+import ru.knyazevvb.networkchat.Command;
+
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
+
+import static ru.knyazevvb.networkchat.Command.*;
 
 public class ClientHandler {
+
     private final Socket socket;
     private final ChatServer chatServer;
     private final DataInputStream in;
     private final DataOutputStream out;
+
     private String nick;
 
     public ClientHandler(Socket socket, ChatServer chatServer) {
@@ -64,10 +68,20 @@ public class ClientHandler {
         try {
             while (true) {
                 final String message = in.readUTF();
-                if ("/end".equals(message)) {
-                    break;
+                if (Command.isCommand(message)) {
+                    if (getCommandByText(message) == END) {
+                        break;
+                    }
+                    if (getCommandByText(message) == PRIVATE_MESSAGE) {
+                        final String[] split = message.split(" ");
+                        final String nickTo = split[1];
+                        chatServer.sendMessageToClient(this, nickTo, message
+                                .substring(PRIVATE_MESSAGE.getCommand().length() + 2 +
+                                        nickTo.length()));
+                    }
+                    continue;
                 }
-                chatServer.broadcast(message);
+                chatServer.broadcast(nick + ": " + message);
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -75,20 +89,21 @@ public class ClientHandler {
     }
 
     private void authenticate() {
-        while (true) {
-            try {
+        try {
+            while (true) {
                 final String message = in.readUTF();
-                if (message.startsWith("/auth")) {
+                if (getCommandByText(message) == AUTH) {
                     final String[] split = message.split(" ");
                     final String login = split[1];
-                    final String password = split[2]; //сделать проверку, чтобы пользователь вводит все данные try/catch - ?!!!
-                    final String nick = chatServer.getAuthService().getNickByLoginAndPassword(login, password);
+                    final String password = split[2];
+                    final String nick = chatServer.getAuthService()
+                            .getNickByLoginAndPassword(login, password);
                     if (nick != null) {
                         if (chatServer.isNickBusy(nick)) {
                             sendMessage("Пользователь уже авторизован");
                             continue;
                         }
-                        sendMessage("/authok " + nick);
+                        sendMessage(Command.AUTHOK, nick);
                         this.nick = nick;
                         chatServer.broadcast("Пользователь " + nick + " зашел в чат");
                         chatServer.subscribe(this);
@@ -97,19 +112,27 @@ public class ClientHandler {
                         sendMessage("Неверный логин и пароль");
                     }
                 }
-            } catch (IOException e) {
-                e.printStackTrace();
             }
+        } catch (IOException e) {
+            e.printStackTrace();
         }
     }
 
+    public void sendMessage(Command command, String message) {
+        try {
+            out.writeUTF(command.getCommand() + " " + message);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+    }
+
+
     public void sendMessage(String message) {
         try {
-            if (message.startsWith("/authok")) {
-                out.writeUTF(message);
-            } else {
-                out.writeUTF(getNick() + ": " + message);
-            }
+
+            out.writeUTF(getNick() + ": " + message);
+
         } catch (IOException e) {
             e.printStackTrace();
         }

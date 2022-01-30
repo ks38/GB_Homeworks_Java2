@@ -1,11 +1,14 @@
 package ru.knyazevvb.networkchat.Client;
 
 import ru.knyazevvb.networkchat.ClientController;
+import ru.knyazevvb.networkchat.Command;
 
 import java.io.DataInputStream;
 import java.io.DataOutputStream;
 import java.io.IOException;
 import java.net.Socket;
+
+import static ru.knyazevvb.networkchat.Command.*;
 
 public class ChatClient {
     private Socket socket;
@@ -28,16 +31,26 @@ public class ChatClient {
                 try {
                     while (true) {
                         final String authMessage = in.readUTF();
-                        if (authMessage.startsWith("/authok")) {
+                        if (getCommandByText(authMessage) == AUTHOK) {
                             final String nick = authMessage.split(" ")[1];
                             controller.addMessage("Успешная авторизация под ником: " + nick);
+                            controller.setAuth(true);
                             break;
                         }
                     }
                     while (true) {
                         final String message = in.readUTF();
-                        if ("/end".equals(message)) {
-                            break;
+                        if (Command.isCommand(message)) {
+                            final Command command = getCommandByText(message);
+                            if (command == END) {
+                                controller.setAuth(false);
+                                break;
+                            }
+                            if (getCommandByText(message) == CLIENTS) {
+                                final String[] clients = message.replace(CLIENTS
+                                        .getCommand() + " ", " ").split(" ");
+                                controller.updateClientsList(clients);
+                            }
                         }
                         controller.addMessage(message);
                     }
