@@ -15,6 +15,7 @@ public class ClientHandler {
     private final ChatServer chatServer;
     private final DataInputStream in;
     private final DataOutputStream out;
+    private boolean isNotDisconnected;
 
     private String nick;
 
@@ -25,15 +26,36 @@ public class ClientHandler {
             this.chatServer = chatServer;
             in = new DataInputStream(socket.getInputStream());
             out = new DataOutputStream(socket.getOutputStream());
+            isNotDisconnected = false;
+
+            // добавление таймера
+            Thread timerThread = new Thread(() -> {
+                try {
+                    Thread.sleep(120_000);
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                if (!isNotDisconnected) {
+                  sendMessage(END.getCommand());
+                  closeConnection();
+                }
+            });
+            timerThread.start();
+            //конец добавления таймера
 
             new Thread(() -> {
                 try {
                     authenticate();
-                    readMessage();
+                    if (isNotDisconnected) {
+                        readMessage();
+                    }
                 } finally {
                     closeConnection();
+                    isNotDisconnected = true;
                 }
+
             }).start();
+
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -88,11 +110,17 @@ public class ClientHandler {
         }
     }
 
-    private void authenticate() {
+    public void authenticate() {
         try {
             while (true) {
-                final String message = in.readUTF();
+                String message = in.readUTF();
+                if (message.startsWith("/end")) {
+                    sendMessage(message);
+                    isNotDisconnected = false;
+                    break;
+                }
                 if (getCommandByText(message) == AUTH) {
+                    isNotDisconnected = true;
                     final String[] split = message.split(" ");
                     final String login = split[1];
                     final String password = split[2];
@@ -100,12 +128,14 @@ public class ClientHandler {
                             .getNickByLoginAndPassword(login, password);
                     if (nick != null) {
                         if (chatServer.isNickBusy(nick)) {
+                            isNotDisconnected = true;
                             sendMessage("Пользователь уже авторизован");
                             continue;
                         }
                         sendMessage(Command.AUTHOK, nick);
                         this.nick = nick;
                         chatServer.broadcast("Пользователь " + nick + " зашел в чат");
+                        isNotDisconnected = true;
                         chatServer.subscribe(this);
                         break;
                     } else {

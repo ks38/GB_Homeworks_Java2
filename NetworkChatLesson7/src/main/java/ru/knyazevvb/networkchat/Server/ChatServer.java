@@ -25,7 +25,6 @@ public class ChatServer {
                 final Socket socket = serverSocket.accept();
                 new ClientHandler(socket, this);
                 System.out.println("Клиент подключился");
-
             }
         } catch (IOException e) {
             e.printStackTrace();

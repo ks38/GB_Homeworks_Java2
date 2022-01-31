@@ -29,6 +29,7 @@ public class ChatClient {
             out = new DataOutputStream(socket.getOutputStream());
             new Thread(() -> {
                 try {
+
                     while (true) {
                         final String authMessage = in.readUTF();
                         if (getCommandByText(authMessage) == AUTHOK) {
@@ -60,6 +61,7 @@ public class ChatClient {
                     closeConnection();
                 }
             }).start();
+
 
         } catch (IOException e) {
             e.printStackTrace();
